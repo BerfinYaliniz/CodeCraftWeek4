@@ -1,0 +1,99 @@
+4//Bir sözlüğün işlevselliğini uygular
+#include <stdio.h>
+#include <string.h>
+#include <strings.h>
+#include <stdbool.h>
+#include <ctype.h>
+#include <stdlib.h>
+
+#include "dictionary.h"
+
+// Hash tablosundaki bir düğümü temsil eder.
+typedef struct node
+{
+    char word[LENGTH + 1];
+    struct node *next;
+}
+node;
+
+// Hash tablosundaki buckets sayısı
+const unsigned int N = 26;
+
+// Hash tablosu
+node *table[N];
+int words=0;
+
+//Kelimeyi bir sayıya hashler.
+unsigned int hash(const char *word)
+{
+    return tolower(word[0]) - 'a';
+}
+
+//Kelime sözlükte ise true değerini döndürür, değilse false değerini döndürür.
+bool check(const char *word)
+{
+    int temp=hash(word);
+    node *cursor=table[temp];
+    while(cursor!=NULL){
+        if (strcasecmp(cursor->word, word) == 0) return true;
+        cursor = cursor->next;
+    }
+    return 0;
+}
+
+
+
+// Sözlüğü belleğe yükler, başarılı olursa true döndürür, değilse false değerini döndürür.
+bool load(const char *dictionary)
+{
+
+    FILE *pointer1 = fopen(dictionary, "r");
+    if(pointer1==NULL) return 0;
+    char dicwords[LENGTH+1];
+    while(fscanf(pointer1,"%s",dicwords)!=EOF){
+
+        node *n = malloc(sizeof(node));
+        if(n==NULL) return 0;
+
+        strcpy(n->word,dicwords);
+
+        int x=hash(dicwords);
+
+        if(table[x]==NULL) {
+            n->next=NULL;
+            table[x]=n;}
+
+        else {
+            n->next = table[x];
+            table[x]=n;
+        }
+        words++;
+    }
+    fclose(pointer1);
+    return true;
+}
+//Sözlükteki kelimelerin sayısını verir, henüz yüklenmemişse 0 döndürür.
+//**tkerarbak Başka yüklenirse sözlükteki kelime sayısını verir, henüz yüklenmemişse 0
+.
+unsigned int size(void)
+{
+    return words;
+}
+
+// Sözlüğü bellekten kaldırır,başarılı olursa true döndürüyor olmazsa false döndürüyor.
+bool unload(void)
+{
+    for(int i = 0; i < N; i++)
+    {
+        node *cursor = table[i];
+        node *temp = cursor;
+
+        while(cursor != NULL)
+        {
+            cursor = cursor->next;
+            free(temp);
+            temp = cursor;
+        }
+    }
+    return true;
+}
